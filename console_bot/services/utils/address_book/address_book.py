@@ -16,7 +16,7 @@ class AddressBook:
 
     def get_contact(self, username: str) -> Record | None:
         if not os.path.exists(self.filename) or os.path.getsize(self.filename) == 0:
-            return
+            raise KeyError(username)
 
         for contact in self.iterator(1):
             contact = contact[0]
@@ -25,21 +25,6 @@ class AddressBook:
                 return contact
 
         raise KeyError(username)
-
-    def get_contacts(self, search: Optional[str] = None) -> list[Record]:
-        if not os.path.exists(self.filename) or os.path.getsize(self.filename) == 0:
-            return []
-
-        contacts = []
-
-        for contact in self.iterator(1):
-            contact = contact[0]
-
-            if search is None or search in contact.name.value \
-                    or any(search in str(x.value) for x in contact.phones):
-                contacts.append(contact)
-
-        return contacts
 
     # Temporary command due to impossibility to change object in the file
     def change_contact(self, contact: Record, remove: bool = False) -> None:
@@ -61,6 +46,9 @@ class AddressBook:
         os.remove(temporary_filename)
 
     def iterator(self, count: int = 0) -> 'Generator[list[Record]]':
+        if not os.path.exists(self.filename) or os.path.getsize(self.filename) == 0:
+            return
+
         count = count if count else "inf"
 
         records = []
